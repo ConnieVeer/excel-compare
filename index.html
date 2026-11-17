@@ -3,10 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Compare Two Excel Files Online (Free, by Key Column)</title>
-<meta name="description" content="Compare two Excel or CSV files and see what was added, removed or changed. Match rows by a key column such as ID, even if the order differs. Free, private, runs in your browser.">
-<!-- After you get a domain, add: <link rel="canonical" href="https://YOURDOMAIN/"> -->
+<title>Compare Two Excel or CSV Files Online (Free, by Key Column)</title>
+<meta name="description" content="Compare two Excel or CSV files online. See added, removed and changed rows, matched by a key column like ID. Free and private: nothing is uploaded.">
+<!-- After you get a domain, add: <link rel="canonical" href="https://YOURDOMAIN/"> and <meta property="og:url" content="https://YOURDOMAIN/"> -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Compare Two Excel or CSV Files Online (Free, by Key Column)">
+<meta property="og:description" content="Find what changed between two Excel or CSV files. Match rows by a key column, even when the order differs. Free, private, no sign-up.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Compare Two Excel or CSV Files Online (Free, by Key Column)">
+<meta name="twitter:description" content="Find what changed between two Excel or CSV files. Match rows by a key column, even when the order differs. Free, private, no sign-up.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232563eb'/%3E%3Cpath d='M8 9h7v14H8zM17 9h7v14h-7z' fill='white'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#2563eb">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Compare Two Excel Files",
+  "description": "Free online tool to compare two Excel or CSV files by key column and list added, removed and changed rows. Runs in the browser; files are not uploaded.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any (web browser)",
+  "browserRequirements": "Requires JavaScript",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  }
+}
+</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -30,10 +53,66 @@
     },
     {
       "@type": "Question",
+      "name": "How do I compare two CSV files?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Upload both .csv files in the same way. The delimiter (comma, semicolon, tab or pipe) is detected automatically and you can change it if needed. You can also compare a CSV file with an Excel file."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I compare two sheets in the same workbook?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Upload the same file twice, once as File A and once as File B, and choose a different sheet for each side."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How can I compare two Excel files without VLOOKUP?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Choose a key column and the tool does the matching for you. It pairs each row with its counterpart by key value, which is what a VLOOKUP or XLOOKUP does, but for every row and every column at once and in both directions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it highlight the differences in my original file?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. The result is a separate difference report that lists added, removed and changed rows and shows the old and new value of each changed cell. Your original files are never modified."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which file types work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The tool reads .xlsx, .xls and .csv files. For workbooks with several sheets you choose the sheet per file. The result can be downloaded as .xlsx, .xls or .csv."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How are values compared?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cells are compared as text, exactly as you see them in the sheet. Formulas are compared by their displayed result. The downloaded result also contains text values."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "Are my files uploaded to a server?",
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "No. Both files are read and compared in your browser. Nothing is uploaded or stored."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a size limit?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "There is no fixed limit, but everything runs on your own device. Files with tens of thousands of rows work fine and very large files can be slow. The .xls format itself is limited to 65,536 rows, so choose .xlsx or .csv for big results."
       }
     }
   ]
@@ -191,8 +270,8 @@
 <div class="wrap">
 
   <header>
-    <h1>Compare Two Excel Files</h1>
-    <p class="sub">Upload two Excel or CSV files and see what was added, removed or changed. Match rows by a key column like ID or email, even when the order differs. Free, private and no sign-up.</p>
+    <h1>Compare Two Excel or CSV Files Online</h1>
+    <p class="sub">Find the differences between two Excel or CSV files. See which rows were added, removed or changed, matched by a key column like ID or email, even when the order differs. Free, private and no sign-up.</p>
   </header>
 
   <noscript><p class="msg error">This tool needs JavaScript to run.</p></noscript>
@@ -329,6 +408,25 @@ Result:   102  changed  City: Utrecht → Rotterdam
           103  added
           101  removed</pre>
 
+      <h2 class="page">What people use it for</h2>
+      <ul>
+        <li>Check what changed between last month's export and this month's.</li>
+        <li>Find new, removed or updated customers, products or prices in two lists.</li>
+        <li>Verify a data migration or ETL load by comparing the source and target extracts.</li>
+        <li>Reconcile two versions of a spreadsheet that colleagues edited separately.</li>
+        <li>Compare a database export (CSV) with an Excel report.</li>
+      </ul>
+
+      <h2 class="page">Comparing in Excel itself, and where it falls short</h2>
+      <p>Excel can compare files, but each method has limits:</p>
+      <ul>
+        <li><strong>View Side by Side</strong> helps you look at two files together, but you still spot the differences by eye.</li>
+        <li><strong>A formula such as =A2=B2</strong> only works when both sheets have the same rows in the same order.</li>
+        <li><strong>VLOOKUP or XLOOKUP</strong> on a key column works for one column at a time, and you need a second lookup in the other direction to find rows that exist only in the other file.</li>
+        <li><strong>Microsoft Spreadsheet Compare</strong> is only included in certain Office editions and runs on Windows.</li>
+      </ul>
+      <p>This tool combines the key-based matching of a lookup with a clear report of added, removed and changed rows, right in your browser.</p>
+
       <h2 class="page">Frequently asked questions</h2>
 
       <h3>How do I compare two Excel files and find the differences?</h3>
@@ -337,8 +435,20 @@ Result:   102  changed  City: Utrecht → Rotterdam
       <h3>Does the order of the rows matter?</h3>
       <p>Not when you match by key column. Rows are paired by their key value, so sorted differently or with rows inserted in the middle still compares correctly. Only the row position mode depends on the order.</p>
 
+      <h3>How do I compare two CSV files?</h3>
+      <p>Upload both .csv files in the same way. The delimiter (comma, semicolon, tab or pipe) is detected automatically and you can change it if needed. You can also compare a CSV file with an Excel file.</p>
+
+      <h3>Can I compare two sheets in the same workbook?</h3>
+      <p>Yes. Upload the same file twice, once as File A and once as File B, and choose a different sheet for each side.</p>
+
+      <h3>How can I compare two Excel files without VLOOKUP?</h3>
+      <p>Choose a key column and the tool does the matching for you. It pairs each row with its counterpart by key value, which is what a VLOOKUP or XLOOKUP does, but for every row and every column at once and in both directions.</p>
+
+      <h3>Does it highlight the differences in my original file?</h3>
+      <p>No. The result is a separate difference report that lists added, removed and changed rows and shows the old and new value of each changed cell. Your original files are never modified.</p>
+
       <h3>Which file types work?</h3>
-      <p>.xlsx, .xls and .csv. CSV files with a comma, semicolon, tab or pipe delimiter are detected automatically. For workbooks with several sheets you choose the sheet per file.</p>
+      <p>The tool reads .xlsx, .xls and .csv files. For workbooks with several sheets you choose the sheet per file. The result can be downloaded as .xlsx, .xls or .csv.</p>
 
       <h3>How are values compared?</h3>
       <p>Cells are compared as text, exactly as you see them in the sheet. Formulas are compared by their displayed result. The downloaded result also contains text values.</p>
@@ -347,7 +457,7 @@ Result:   102  changed  City: Utrecht → Rotterdam
       <p>No. Both files are read and compared in your browser. Nothing is uploaded or stored.</p>
 
       <h3>Is there a size limit?</h3>
-      <p>There is no fixed limit, but everything runs on your own device. Files with tens of thousands of rows work fine. Very large files can be slow. The .xls format itself is limited to 65,536 rows, so choose .xlsx or .csv for big results.</p>
+      <p>There is no fixed limit, but everything runs on your own device. Files with tens of thousands of rows work fine and very large files can be slow. The .xls format itself is limited to 65,536 rows, so choose .xlsx or .csv for big results.</p>
     </section>
 
     <!-- AFFILIATE SECTION: remove the "hidden" attribute once you add your links.
