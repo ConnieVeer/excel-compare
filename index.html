@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compare Two Excel Files Online (Free, by Key Column)</title>
+<meta name="description" content="Compare two Excel or CSV files and see what was added, removed or changed. Match rows by a key column such as ID, even if the order differs. Free, private, runs in your browser.">
+<!-- After you get a domain, add: <link rel="canonical" href="https://YOURDOMAIN/"> -->
+<meta name="theme-color" content="#2563eb">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I compare two Excel files and find the differences?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Upload both files, choose a key column that identifies each row (such as an ID or email address) and click Compare. The tool lists rows that were added, removed or changed, and shows exactly which cells differ."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does the order of the rows matter?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not when you match by key column. Rows are paired by their key value, so sorted differently or with rows inserted in the middle still compares correctly. Only the row position mode depends on the order."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are my files uploaded to a server?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Both files are read and compared in your browser. Nothing is uploaded or stored."
+      }
+    }
+  ]
+}
+</script>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #475569;
+    --border: #cbd5e1;
+    --accent: #2563eb;
+    --accent-text: #ffffff;
+    --accent-hover: #1d4ed8;
+    --field: #ffffff;
+    --code: #eef2f7;
+    --add-bg: #dcfce7; --add-fg: #166534;
+    --rem-bg: #fee2e2; --rem-fg: #991b1b;
+    --chg-bg: #fef3c7; --chg-fg: #92400e;
+    --same-bg: #e2e8f0; --same-fg: #334155;
+    --err: #b91c1c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220;
+      --card: #111a2e;
+      --text: #e5eaf3;
+      --muted: #9fb0c8;
+      --border: #2a3a57;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --field: #0b1220;
+      --code: #0b1220;
+      --add-bg: #14532d; --add-fg: #bbf7d0;
+      --rem-bg: #7f1d1d; --rem-fg: #fecaca;
+      --chg-bg: #78350f; --chg-fg: #fde68a;
+      --same-bg: #1e293b; --same-fg: #cbd5e1;
+      --err: #fca5a5;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px 48px; }
+  header { padding: 28px 0 8px; }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.2; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  h2 { font-size: 1.3rem; margin: 0 0 10px; }
+  h2.page { margin-top: 40px; }
+  h3 { font-size: 1.05rem; margin: 18px 0 4px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .uploads { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 760px) { .uploads { grid-template-columns: 1fr 1fr; } }
+  .slot h3 { margin-top: 0; }
+  .slot h3 span { font-weight: 400; color: var(--muted); }
+  .drop {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; text-align: center;
+    min-height: 110px; padding: 14px;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--field);
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); }
+  .drop:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .drop-sub { color: var(--muted); font-size: 0.9rem; }
+  .slot-info { margin-top: 8px; font-size: 0.92rem; color: var(--muted); word-break: break-all; min-height: 1.4em; }
+  .slot-info.error { color: var(--err); }
+  .slot-opts { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 6px; }
+  .slot-opts label { font-size: 0.9rem; color: var(--muted); }
+  select {
+    margin-left: 6px;
+    padding: 6px 8px;
+    background: var(--field);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font: inherit;
+    max-width: 100%;
+  }
+  select:focus, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  fieldset { border: 1px solid var(--border); border-radius: 10px; margin: 0 0 14px; padding: 10px 14px; }
+  legend { font-weight: 600; padding: 0 6px; }
+  fieldset label { display: block; cursor: pointer; margin: 2px 0; }
+  small, .note { color: var(--muted); font-size: 0.9rem; }
+  .checks { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 4px 0 14px; }
+  .checks label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  table { border-collapse: collapse; width: 100%; }
+  .colwrap { max-height: 260px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .colwrap th, .colwrap td { padding: 6px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+  .colwrap th { position: sticky; top: 0; background: var(--card); z-index: 1; }
+  .colwrap td:nth-child(n+2), .colwrap th:nth-child(n+2) { text-align: center; width: 90px; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+  button {
+    font: inherit; font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+  }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+  .msg { margin: 10px 0 0; min-height: 1.4em; }
+  .msg.error { color: var(--err); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+  .chip { padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.92rem; }
+  .chip.added, .badge.added { background: var(--add-bg); color: var(--add-fg); }
+  .chip.removed, .badge.removed { background: var(--rem-bg); color: var(--rem-fg); }
+  .chip.changed, .badge.changed { background: var(--chg-bg); color: var(--chg-fg); }
+  .chip.unchanged, .badge.unchanged { background: var(--same-bg); color: var(--same-fg); }
+  .badge { display: inline-block; padding: 1px 9px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .filters button { padding: 6px 12px; font-weight: 500; font-size: 0.92rem; }
+  .filters button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-text); }
+  .results-table { display: block; overflow-x: auto; }
+  .results-table th, .results-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .results-table th { white-space: nowrap; }
+  .results-table td.num { text-align: right; white-space: nowrap; }
+  .results-table td.detail { min-width: 220px; }
+  .detail div { margin: 1px 0; word-break: break-word; }
+  .detail .colname { color: var(--muted); }
+  .detail del { color: var(--rem-fg); background: var(--rem-bg); text-decoration: line-through; padding: 0 3px; border-radius: 3px; }
+  .detail ins { color: var(--add-fg); background: var(--add-bg); text-decoration: none; padding: 0 3px; border-radius: 3px; }
+  .download { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: end; padding: 12px; border: 1px solid var(--border); border-radius: 10px; margin: 8px 0; }
+  .download label { font-size: 0.92rem; color: var(--muted); }
+  .download .check { display: flex; align-items: center; gap: 8px; color: var(--text); }
+  pre {
+    background: var(--code); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; overflow-x: auto; font-size: 14px; line-height: 1.5; margin: 8px 0;
+  }
+  ol, ul { padding-left: 22px; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 0.9rem; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Compare Two Excel Files</h1>
+    <p class="sub">Upload two Excel or CSV files and see what was added, removed or changed. Match rows by a key column like ID or email, even when the order differs. Free, private and no sign-up.</p>
+  </header>
+
+  <noscript><p class="msg error">This tool needs JavaScript to run.</p></noscript>
+
+  <main>
+    <section class="card" aria-labelledby="step1">
+      <h2 id="step1">1. Upload your two files</h2>
+      <div class="uploads">
+
+        <div class="slot">
+          <h3>File A <span>(original / old)</span></h3>
+          <label class="drop" id="dropA">
+            <input type="file" id="fileA" class="sr-only" accept=".xlsx,.xls,.csv">
+            <span>Drop a file here or <u>browse</u></span>
+            <span class="drop-sub">.xlsx, .xls or .csv</span>
+          </label>
+          <div class="slot-info" id="infoA" aria-live="polite"></div>
+          <div class="slot-opts" id="optsA">
+            <label id="sheetWrapA" hidden>Sheet <select id="sheetA"></select></label>
+            <label id="delimWrapA" hidden>Delimiter
+              <select id="delimA">
+                <option value=",">Comma ( , )</option>
+                <option value=";">Semicolon ( ; )</option>
+                <option value="&#9;">Tab</option>
+                <option value="|">Pipe ( | )</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="slot">
+          <h3>File B <span>(new / updated)</span></h3>
+          <label class="drop" id="dropB">
+            <input type="file" id="fileB" class="sr-only" accept=".xlsx,.xls,.csv">
+            <span>Drop a file here or <u>browse</u></span>
+            <span class="drop-sub">.xlsx, .xls or .csv</span>
+          </label>
+          <div class="slot-info" id="infoB" aria-live="polite"></div>
+          <div class="slot-opts" id="optsB">
+            <label id="sheetWrapB" hidden>Sheet <select id="sheetB"></select></label>
+            <label id="delimWrapB" hidden>Delimiter
+              <select id="delimB">
+                <option value=",">Comma ( , )</option>
+                <option value=";">Semicolon ( ; )</option>
+                <option value="&#9;">Tab</option>
+                <option value="|">Pipe ( | )</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+      </div>
+      <p class="note" style="margin:12px 0 0">Both files are read in your browser. Nothing is uploaded.</p>
+    </section>
+
+    <section class="card" id="step2" aria-labelledby="step2h" hidden>
+      <h2 id="step2h">2. Choose how to compare</h2>
+
+      <fieldset>
+        <legend>Match rows by</legend>
+        <label><input type="radio" name="mode" value="key" checked> Key column(s) <small>(recommended, for example an ID or email)</small></label>
+        <label><input type="radio" name="mode" value="position"> Row position <small>(row 1 with row 1, row 2 with row 2, and so on)</small></label>
+      </fieldset>
+
+      <div class="checks">
+        <label><input type="checkbox" id="hasHeader" checked> First row contains column names</label>
+        <label><input type="checkbox" id="trim" checked> Ignore spaces at the start and end</label>
+        <label><input type="checkbox" id="ignoreCase"> Ignore upper/lower case</label>
+      </div>
+
+      <div class="colwrap">
+        <table aria-label="Columns that appear in both files">
+          <thead><tr><th scope="col">Column (in both files)</th><th scope="col">Key</th><th scope="col">Compare</th></tr></thead>
+          <tbody id="colbody"></tbody>
+        </table>
+      </div>
+      <p class="note" id="colnotes" style="margin:8px 0 0"></p>
+
+      <div class="actions">
+        <button type="button" class="primary" id="run">Compare</button>
+      </div>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="results" aria-labelledby="step3" hidden>
+      <h2 id="step3">3. Results</h2>
+      <div class="chips" id="chips"></div>
+      <p class="note" id="resnotes" style="margin:0 0 8px"></p>
+
+      <div class="download">
+        <label>Download format
+          <select id="format">
+            <option value="xlsx">.xlsx (Excel)</option>
+            <option value="xls">.xls (Excel 97-2003)</option>
+            <option value="csv">.csv</option>
+          </select>
+        </label>
+        <label id="csvDelimWrap" hidden>CSV delimiter
+          <select id="csvDelim">
+            <option value=",">Comma ( , )</option>
+            <option value=";">Semicolon ( ; )</option>
+            <option value="&#9;">Tab</option>
+            <option value="|">Pipe ( | )</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="inclUnchanged"> Include unchanged rows</label>
+        <button type="button" class="primary" id="download">Download result</button>
+      </div>
+      <p class="note" id="fmtnote" style="margin:0"></p>
+      <p class="msg error" id="dlmsg" role="alert"></p>
+
+      <div class="filters" id="filters" role="group" aria-label="Filter results"></div>
+      <div id="tablewrap"></div>
+    </section>
+
+    <section>
+      <h2 class="page">How to compare two Excel files</h2>
+      <ol>
+        <li>Upload the old version as <strong>File A</strong> and the new version as <strong>File B</strong>.</li>
+        <li>Pick a <strong>key column</strong> that identifies each row, like a customer ID. The tool suggests one for you.</li>
+        <li>Click <strong>Compare</strong>. You see which rows were added, removed or changed, and which cells differ.</li>
+        <li>Choose a format (.xlsx, .xls or .csv) and download the result. By default it matches the file you uploaded.</li>
+      </ol>
+
+      <h2 class="page">Why match by key column?</h2>
+      <p>Comparing row by row breaks as soon as one row is inserted or the data is sorted differently: every row after it looks changed. A key column pairs each row with its counterpart by value, so you only see real differences. You can select more than one key column when a single column is not unique, for example first name plus birth date.</p>
+<pre>File A:   101 | Anna | Amsterdam
+          102 | Bram | Utrecht
+
+File B:   102 | Bram | Rotterdam
+          103 | Carla | Hengelo
+
+Result:   102  changed  City: Utrecht → Rotterdam
+          103  added
+          101  removed</pre>
+
+      <h2 class="page">Frequently asked questions</h2>
+
+      <h3>How do I compare two Excel files and find the differences?</h3>
+      <p>Upload both files, choose a key column that identifies each row (such as an ID or email address) and click Compare. The tool lists rows that were added, removed or changed, and shows exactly which cells differ.</p>
+
+      <h3>Does the order of the rows matter?</h3>
+      <p>Not when you match by key column. Rows are paired by their key value, so sorted differently or with rows inserted in the middle still compares correctly. Only the row position mode depends on the order.</p>
+
+      <h3>Which file types work?</h3>
+      <p>.xlsx, .xls and .csv. CSV files with a comma, semicolon, tab or pipe delimiter are detected automatically. For workbooks with several sheets you choose the sheet per file.</p>
+
+      <h3>How are values compared?</h3>
+      <p>Cells are compared as text, exactly as you see them in the sheet. Formulas are compared by their displayed result. The downloaded result also contains text values.</p>
+
+      <h3>Are my files uploaded to a server?</h3>
+      <p>No. Both files are read and compared in your browser. Nothing is uploaded or stored.</p>
+
+      <h3>Is there a size limit?</h3>
+      <p>There is no fixed limit, but everything runs on your own device. Files with tens of thousands of rows work fine. Very large files can be slow. The .xls format itself is limited to 65,536 rows, so choose .xlsx or .csv for big results.</p>
+    </section>
+
+    <!-- AFFILIATE SECTION: remove the "hidden" attribute once you add your links.
+         Add a short disclosure such as "Some links are affiliate links." -->
+    <section id="resources" hidden>
+      <h2 class="page">Recommended resources</h2>
+      <p class="note">Some links are affiliate links. They cost you nothing extra.</p>
+      <ul>
+        <!-- <li><a href="YOUR-AFFILIATE-LINK" rel="sponsored noopener" target="_blank">Name of product</a> – one line on why it helps.</li> -->
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>Compare Excel files &middot; a free tool. Your files are processed locally in your browser.</p>
+  </footer>
+</div>
+
+<script src="xlsx.full.min.js"></script>
+<script>
+// CORE-START
+const XLS_MAX_ROWS = 65536;
+const XLS_MAX_COLS = 256;
+const STATUS_LABEL = { added: 'Added', removed: 'Removed', changed: 'Changed', unchanged: 'Unchanged' };
+
+function fileExt(name) {
+  const m = /\.([^.]+)$/.exec(name || '');
+  return m ? m[1].toLowerCase() : '';
+}
+
+function decodeCsvBytes(buf) {
+  const bytes = new Uint8Array(buf);
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch (e) {
+    return new TextDecoder('windows-1252').decode(bytes);
+  }
+}
+
+function detectDelimiter(text) {
+  const lines = text.replace(/^﻿/, '').split(/\r\n|\r|\n/);
+  const first = (lines.find(function (l) { return l.trim() !== ''; }) || '').replace(/"[^"]*"/g, '');
+  let best = ',', bestCount = 0;
+  [',', ';', '\t', '|'].forEach(function (d) {
+    const c = first.split(d).length - 1;
+    if (c > bestCount) { best = d; bestCount = c; }
+  });
+  return best;
+}
+
+function parseCsv(text, delim) {
+  text = text.replace(/^﻿/, '');
+  const rows = [];
+  let row = [], field = '', inQ = false, i = 0;
+  const n = text.length;
+  while (i < n) {
+    const ch = text[i];
+    if (inQ) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+        inQ = false; i++; continue;
+      }
+      field += ch; i++; continue;
+    }
+    if (ch === '"' && field === '') { inQ = true; i++; continue; }
+    if (ch === delim) { row.push(field); field = ''; i++; continue; }
+    if (ch === '\r' || ch === '\n') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(field); rows.push(row); row = []; field = ''; i++; continue;
+    }
+    field += ch; i++;
+  }
+  if (field !== '' || row.length > 0) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function readSpreadsheet(name, buf, delimOverride) {
+  const ext = fileExt(name);
+  if (ext === 'csv') {
+    const text = decodeCsvBytes(buf);
+    const delimiter = delimOverride || detectDelimiter(text);
+    return { ext: 'csv', delimiter: delimiter, sheetNames: ['CSV'], sheets: { CSV: parseCsv(text, delimiter) } };
+  }
+  if (ext === 'xlsx' || ext === 'xls') {
+    const wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+    const sheets = {};
+    wb.SheetNames.forEach(function (sn) {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: false, defval: '', blankrows: true });
+      sheets[sn] = rows.map(function (r) { return r.map(function (c) { return c == null ? '' : String(c); }); });
+    });
+    if (!wb.SheetNames.length) throw new Error('This workbook has no sheets.');
+    return { ext: ext, delimiter: null, sheetNames: wb.SheetNames.slice(), sheets: sheets };
+  }
+  throw new Error('Unsupported file type. Please use .xlsx, .xls or .csv.');
+}
+
+function tableFromRows(rows, hasHeader) {
+  const offset = hasHeader ? 2 : 1;
+  let last = rows.length;
+  while (last > 0 && rows[last - 1].every(function (c) { return c === ''; })) last--;
+  const data = rows.slice(0, last);
+  let cols = 0;
+  data.forEach(function (r) {
+    for (let c = r.length - 1; c >= 0; c--) {
+      if (r[c] !== '') { if (c + 1 > cols) cols = c + 1; break; }
+    }
+  });
+  if (cols === 0) return { headers: [], rows: [], offset: offset };
+  const full = data.map(function (r) {
+    const out = new Array(cols);
+    for (let c = 0; c < cols; c++) out[c] = r[c] == null ? '' : String(r[c]);
+    return out;
+  });
+  let headers, body;
+  if (hasHeader) {
+    const used = new Map();
+    headers = full[0].map(function (h, i) {
+      const name = h.trim() || 'Column ' + (i + 1);
+      const k = name.toLowerCase();
+      const seen = used.get(k) || 0;
+      used.set(k, seen + 1);
+      return seen ? name + ' (' + (seen + 1) + ')' : name;
+    });
+    body = full.slice(1);
+  } else {
+    headers = Array.from({ length: cols }, function (_, i) { return 'Column ' + (i + 1); });
+    body = full;
+  }
+  return { headers: headers, rows: body, offset: offset };
+}
+
+function normName(s) { return String(s).trim().toLowerCase(); }
+
+function sharedColumns(a, b) {
+  const bIdx = new Map();
+  b.headers.forEach(function (h, i) { bIdx.set(normName(h), i); });
+  const out = [];
+  a.headers.forEach(function (h, i) {
+    const k = normName(h);
+    if (bIdx.has(k)) out.push({ norm: k, name: h, ia: i, ib: bIdx.get(k) });
+  });
+  return out;
+}
+
+function isUniqueColumn(rows, idx) {
+  const seen = new Set();
+  for (let i = 0; i < rows.length; i++) {
+    const v = rows[i][idx].trim();
+    if (v === '' || seen.has(v)) return false;
+    seen.add(v);
+  }
+  return true;
+}
+
+function suggestKeys(a, b) {
+  const shared = sharedColumns(a, b);
+  const hit = shared.find(function (s) { return isUniqueColumn(a.rows, s.ia) && isUniqueColumn(b.rows, s.ib); });
+  if (hit) return [hit.norm];
+  return shared.length ? [shared[0].norm] : [];
+}
+
+function diffTables(a, b, o) {
+  const shared = sharedColumns(a, b);
+  const byNorm = new Map(shared.map(function (s) { return [s.norm, s]; }));
+  const keyCols = (o.keys || []).map(function (k) { return byNorm.get(k); }).filter(Boolean);
+  const keySet = new Set(keyCols.map(function (k) { return k.norm; }));
+  const cmpCols = (o.compare || shared.map(function (s) { return s.norm; }))
+    .map(function (k) { return byNorm.get(k); })
+    .filter(function (s) { return s && !keySet.has(s.norm); });
+  const nv = function (s) {
+    s = s == null ? '' : String(s);
+    if (o.trim) s = s.trim();
+    if (o.ignoreCase) s = s.toLowerCase();
+    return s;
+  };
+  const aNames = new Set(a.headers.map(normName));
+  const bNames = new Set(b.headers.map(normName));
+  const onlyA = a.headers.filter(function (h) { return !bNames.has(normName(h)); });
+  const onlyB = b.headers.filter(function (h) { return !aNames.has(normName(h)); });
+  const union = a.headers.map(function (h, i) {
+    const k = normName(h);
+    return { norm: k, name: h, ia: i, ib: byNorm.has(k) ? byNorm.get(k).ib : -1 };
+  });
+  b.headers.forEach(function (h, i) {
+    if (!aNames.has(normName(h))) union.push({ norm: normName(h), name: h, ia: -1, ib: i });
+  });
+
+  const compareRows = function (ra, rb) {
+    const diffs = [];
+    cmpCols.forEach(function (c) {
+      if (nv(ra[c.ia]) !== nv(rb[c.ib])) diffs.push({ norm: c.norm, name: c.name, a: ra[c.ia], b: rb[c.ib] });
+    });
+    return diffs;
+  };
+
+  const records = [];
+  let dupA = 0, dupB = 0;
+
+  if (o.mode === 'position') {
+    const n = Math.max(a.rows.length, b.rows.length);
+    for (let i = 0; i < n; i++) {
+      const ra = i < a.rows.length ? a.rows[i] : null;
+      const rb = i < b.rows.length ? b.rows[i] : null;
+      const label = 'Row ' + (i + 1);
+      if (ra && rb) {
+        const diffs = compareRows(ra, rb);
+        records.push({ status: diffs.length ? 'changed' : 'unchanged', key: label, rowA: i + a.offset, rowB: i + b.offset, a: ra, b: rb, diffs: diffs });
+      } else if (rb) {
+        records.push({ status: 'added', key: label, rowA: null, rowB: i + b.offset, a: null, b: rb, diffs: [] });
+      } else {
+        records.push({ status: 'removed', key: label, rowA: i + a.offset, rowB: null, a: ra, b: null, diffs: [] });
+      }
+    }
+  } else {
+    if (!keyCols.length) throw new Error('Select at least one key column, or choose "Row position".');
+    const keyOf = function (row, which, counts) {
+      const base = keyCols.map(function (k) { return nv(row[k[which]]); }).join('\u0001');
+      const n = (counts.get(base) || 0) + 1;
+      counts.set(base, n);
+      return { id: base + '\u0002' + n, dup: n > 1 };
+    };
+    const countsA = new Map(), mapA = new Map();
+    a.rows.forEach(function (row, i) {
+      const k = keyOf(row, 'ia', countsA);
+      if (k.dup) dupA++;
+      mapA.set(k.id, i);
+    });
+    const countsB = new Map(), seenA = new Set();
+    b.rows.forEach(function (rowB, j) {
+      const k = keyOf(rowB, 'ib', countsB);
+      if (k.dup) dupB++;
+      const label = keyCols.map(function (c) { return rowB[c.ib]; }).join(' | ');
+      const i = mapA.get(k.id);
+      if (i === undefined) {
+        records.push({ status: 'added', key: label, rowA: null, rowB: j + b.offset, a: null, b: rowB, diffs: [] });
+      } else {
+        seenA.add(i);
+        const diffs = compareRows(a.rows[i], rowB);
+        records.push({ status: diffs.length ? 'changed' : 'unchanged', key: label, rowA: i + a.offset, rowB: j + b.offset, a: a.rows[i], b: rowB, diffs: diffs });
+      }
+    });
+    a.rows.forEach(function (rowA, i) {
+      if (seenA.has(i)) return;
+      const label = keyCols.map(function (c) { return rowA[c.ia]; }).join(' | ');
+      records.push({ status: 'removed', key: label, rowA: i + a.offset, rowB: null, a: rowA, b: null, diffs: [] });
+    });
+  }
+
+  const counts = { added: 0, removed: 0, changed: 0, unchanged: 0 };
+  records.forEach(function (r) { counts[r.status]++; });
+  return { records: records, counts: counts, onlyA: onlyA, onlyB: onlyB, union: union, dupA: dupA, dupB: dupB, keyNames: keyCols.map(function (k) { return k.name; }) };
+}
+
+function showValue(v) { return v === '' ? '(empty)' : v; }
+
+function buildOutputRows(res, includeUnchanged) {
+  const header = ['Status', 'Changed columns', 'Row in file A', 'Row in file B'].concat(res.union.map(function (u) { return u.name; }));
+  const out = [header];
+  const order = ['changed', 'added', 'removed'].concat(includeUnchanged ? ['unchanged'] : []);
+  order.forEach(function (st) {
+    res.records.forEach(function (r) {
+      if (r.status !== st) return;
+      const changed = new Map(r.diffs.map(function (d) { return [d.norm, d]; }));
+      const row = [STATUS_LABEL[st], r.diffs.map(function (d) { return d.name; }).join(', '), r.rowA == null ? '' : r.rowA, r.rowB == null ? '' : r.rowB];
+      res.union.forEach(function (u) {
+        if (changed.has(u.norm)) {
+          const d = changed.get(u.norm);
+          row.push(showValue(d.a) + ' → ' + showValue(d.b));
+        } else if (r.b && u.ib >= 0) row.push(r.b[u.ib]);
+        else if (r.a && u.ia >= 0) row.push(r.a[u.ia]);
+        else row.push('');
+      });
+      out.push(row);
+    });
+  });
+  return out;
+}
+
+function buildSummaryRows(res, meta) {
+  const rows = [
+    ['Comparison summary', ''],
+    ['File A', meta.nameA + (meta.sheetA ? ' [' + meta.sheetA + ']' : '')],
+    ['File B', meta.nameB + (meta.sheetB ? ' [' + meta.sheetB + ']' : '')],
+    ['Matched by', meta.mode === 'position' ? 'Row position' : 'Key: ' + res.keyNames.join(', ')],
+    ['Rows added (only in file B)', res.counts.added],
+    ['Rows removed (only in file A)', res.counts.removed],
+    ['Rows changed', res.counts.changed],
+    ['Rows unchanged', res.counts.unchanged],
+    ['Columns only in file A', res.onlyA.join(', ')],
+    ['Columns only in file B', res.onlyB.join(', ')]
+  ];
+  if (res.dupA || res.dupB) rows.push(['Duplicate keys (extra rows)', 'File A: ' + res.dupA + ', file B: ' + res.dupB]);
+  return rows;
+}
+
+function toCsv(rows, delim) {
+  const quote = function (v) {
+    const s = String(v == null ? '' : v);
+    return (s.indexOf(delim) >= 0 || /["\r\n]/.test(s)) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  return rows.map(function (r) { return r.map(quote).join(delim); }).join('\r\n');
+}
+
+function colWidths(rows) {
+  const w = [];
+  rows.slice(0, 300).forEach(function (r) {
+    r.forEach(function (v, i) {
+      const l = String(v).length;
+      w[i] = Math.min(Math.max(w[i] || 8, l + 2), 50);
+    });
+  });
+  return w.map(function (x) { return { wch: x }; });
+}
+
+function buildDownload(res, meta, format, csvDelim, includeUnchanged) {
+  const diffRows = buildOutputRows(res, includeUnchanged);
+  if (format === 'csv') {
+    return { data: '﻿' + toCsv(diffRows, csvDelim || ','), mime: 'text/csv;charset=utf-8', ext: 'csv' };
+  }
+  if (format === 'xls' && (diffRows.length > XLS_MAX_ROWS || diffRows[0].length > XLS_MAX_COLS)) {
+    throw new Error('This result is too large for the .xls format (max 65,536 rows and 256 columns). Choose .xlsx or .csv.');
+  }
+  const wb = XLSX.utils.book_new();
+  const sSummary = XLSX.utils.aoa_to_sheet(buildSummaryRows(res, meta));
+  sSummary['!cols'] = [{ wch: 32 }, { wch: 60 }];
+  const sDiff = XLSX.utils.aoa_to_sheet(diffRows);
+  sDiff['!cols'] = colWidths(diffRows);
+  XLSX.utils.book_append_sheet(wb, sSummary, 'Summary');
+  XLSX.utils.book_append_sheet(wb, sDiff, 'Differences');
+  const data = XLSX.write(wb, { bookType: format === 'xls' ? 'biff8' : 'xlsx', type: 'array' });
+  return {
+    data: data,
+    mime: format === 'xls' ? 'application/vnd.ms-excel' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ext: format
+  };
+}
+// CORE-END
+
+(function () {
+  if (typeof document === 'undefined') return;
+  const $ = function (id) { return document.getElementById(id); };
+  const MAX_SHOWN = 500;
+  const state = { A: null, B: null, tableA: null, tableB: null, result: null, meta: null, filter: 'diff' };
+
+  function el(tag, props) {
+    const e = document.createElement(tag);
+    if (props) Object.keys(props).forEach(function (k) {
+      if (k === 'class') e.className = props[k];
+      else if (k === 'text') e.textContent = props[k];
+      else e.setAttribute(k, props[k]);
+    });
+    for (let i = 2; i < arguments.length; i++) if (arguments[i] != null) e.append(arguments[i]);
+    return e;
+  }
+  function setMsg(text, isError) {
+    const m = $('msg');
+    m.textContent = text || '';
+    m.className = 'msg' + (isError ? ' error' : '');
+  }
+  function clip(s, n) { s = String(s); return s.length > n ? s.slice(0, n) + '…' : s; }
+
+  if (typeof XLSX === 'undefined') {
+    ['infoA', 'infoB'].forEach(function (id) {
+      $(id).textContent = 'The spreadsheet library (xlsx.full.min.js) did not load. Upload it next to index.html.';
+      $(id).className = 'slot-info error';
+    });
+    return;
+  }
+
+  ['A', 'B'].forEach(function (slot) {
+    const input = $('file' + slot), drop = $('drop' + slot);
+    input.addEventListener('change', function () { if (input.files[0]) loadFile(slot, input.files[0]); });
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); });
+    });
+    drop.addEventListener('drop', function (e) {
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) loadFile(slot, f);
+    });
+    $('sheet' + slot).addEventListener('change', function () {
+      state[slot].sheet = $('sheet' + slot).value;
+      onTablesChanged();
+    });
+    $('delim' + slot).addEventListener('change', function () {
+      const f = state[slot];
+      if (!f) return;
+      try {
+        const parsed = readSpreadsheet(f.name, f.buf, $('delim' + slot).value);
+        state[slot] = Object.assign({}, f, parsed, { sheet: parsed.sheetNames[0] });
+        onTablesChanged();
+      } catch (err) { showSlotError(slot, err.message); }
+    });
+  });
+
+  function showSlotError(slot, text) {
+    const info = $('info' + slot);
+    info.textContent = text;
+    info.className = 'slot-info error';
+  }
+
+  function loadFile(slot, file) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      try {
+        const parsed = readSpreadsheet(file.name, reader.result);
+        state[slot] = Object.assign({ name: file.name, buf: reader.result, sheet: parsed.sheetNames[0] }, parsed);
+        $('sheetWrap' + slot).hidden = parsed.sheetNames.length < 2;
+        const sel = $('sheet' + slot);
+        sel.textContent = '';
+        parsed.sheetNames.forEach(function (sn) { sel.append(el('option', { value: sn, text: sn })); });
+        $('delimWrap' + slot).hidden = parsed.ext !== 'csv';
+        if (parsed.ext === 'csv') $('delim' + slot).value = parsed.delimiter;
+      } catch (err) {
+        state[slot] = null;
+        $('sheetWrap' + slot).hidden = true;
+        $('delimWrap' + slot).hidden = true;
+        const why = /password|encrypt/i.test(err.message) ? ' The file seems to be password protected.' : '';
+        showSlotError(slot, 'Could not read this file. ' + (/Unsupported/.test(err.message) ? err.message : 'Is it a valid .xlsx, .xls or .csv file?' + why));
+      }
+      onTablesChanged();
+    };
+    reader.onerror = function () { showSlotError(slot, 'Could not read this file.'); };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function currentTable(slot) {
+    const f = state[slot];
+    return f ? tableFromRows(f.sheets[f.sheet], $('hasHeader').checked) : null;
+  }
+
+  function onTablesChanged() {
+    state.result = null;
+    $('results').hidden = true;
+    setMsg('');
+    state.tableA = currentTable('A');
+    state.tableB = currentTable('B');
+    ['A', 'B'].forEach(function (slot) {
+      const t = state['table' + slot], f = state[slot], info = $('info' + slot);
+      if (!f || !t) { if (!f && info.className.indexOf('error') < 0) info.textContent = ''; return; }
+      info.className = 'slot-info';
+      info.textContent = f.name + ' · ' + t.rows.length + ' rows × ' + t.headers.length + ' columns';
+    });
+    if (state.tableA && state.tableB) {
+      buildColumnPanel();
+      $('step2').hidden = false;
+    } else {
+      $('step2').hidden = true;
+    }
+  }
+
+  function buildColumnPanel() {
+    const a = state.tableA, b = state.tableB;
+    const shared = sharedColumns(a, b);
+    const keys = new Set(suggestKeys(a, b));
+    const body = $('colbody');
+    body.textContent = '';
+    shared.forEach(function (s) {
+      const key = el('input', { type: 'checkbox', 'data-role': 'key', 'data-norm': s.norm, 'aria-label': 'Use ' + s.name + ' as key' });
+      const cmp = el('input', { type: 'checkbox', 'data-role': 'cmp', 'data-norm': s.norm, 'aria-label': 'Compare ' + s.name });
+      key.checked = keys.has(s.norm);
+      cmp.checked = !key.checked;
+      cmp.disabled = key.checked;
+      body.append(el('tr', null, el('td', { text: s.name }), el('td', null, key), el('td', null, cmp)));
+    });
+    const notes = [];
+    const onlyA = a.headers.filter(function (h) { return !shared.some(function (s) { return s.norm === normName(h); }); });
+    const onlyB = b.headers.filter(function (h) { return !shared.some(function (s) { return s.norm === normName(h); }); });
+    if (onlyA.length) notes.push('Only in file A: ' + clip(onlyA.join(', '), 200) + '.');
+    if (onlyB.length) notes.push('Only in file B: ' + clip(onlyB.join(', '), 200) + '.');
+    if (!shared.length) notes.push('The files have no column names in common, so only row position can be used.');
+    $('colnotes').textContent = notes.join(' ');
+    document.querySelector('input[name="mode"][value="' + (shared.length ? 'key' : 'position') + '"]').checked = true;
+    updateModeUI();
+
+    const defFmt = state.A.ext;
+    $('format').value = defFmt;
+    const csvSrc = state.A.ext === 'csv' ? state.A : (state.B.ext === 'csv' ? state.B : null);
+    $('csvDelim').value = csvSrc ? csvSrc.delimiter : ',';
+    updateFormatUI();
+  }
+
+  function updateModeUI() {
+    const pos = document.querySelector('input[name="mode"]:checked').value === 'position';
+    document.querySelectorAll('#colbody input[data-role="key"]').forEach(function (i) { i.disabled = pos; });
+  }
+
+  $('colbody').addEventListener('change', function (e) {
+    const t = e.target;
+    if (t.getAttribute('data-role') === 'key') {
+      const norm = t.getAttribute('data-norm');
+      document.querySelectorAll('#colbody input[data-role="cmp"]').forEach(function (cmp) {
+        if (cmp.getAttribute('data-norm') !== norm) return;
+        cmp.disabled = t.checked;
+        cmp.checked = !t.checked;
+      });
+    }
+    rerunIfNeeded();
+  });
+  ['trim', 'ignoreCase'].forEach(function (id) { $(id).addEventListener('change', rerunIfNeeded); });
+  $('hasHeader').addEventListener('change', onTablesChanged);
+  document.querySelectorAll('input[name="mode"]').forEach(function (r) {
+    r.addEventListener('change', function () { updateModeUI(); rerunIfNeeded(); });
+  });
+
+  function rerunIfNeeded() { if (state.result) runCompare(); }
+
+  function readSelection() {
+    const keys = [], compare = [];
+    document.querySelectorAll('#colbody input[data-role="key"]').forEach(function (i) { if (i.checked) keys.push(i.getAttribute('data-norm')); });
+    document.querySelectorAll('#colbody input[data-role="cmp"]').forEach(function (i) { if (i.checked) compare.push(i.getAttribute('data-norm')); });
+    return { keys: keys, compare: compare };
+  }
+
+  function runCompare() {
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const sel = readSelection();
+    setMsg('');
+    try {
+      state.result = diffTables(state.tableA, state.tableB, {
+        mode: mode, keys: sel.keys, compare: sel.compare,
+        trim: $('trim').checked, ignoreCase: $('ignoreCase').checked
+      });
+    } catch (err) {
+      state.result = null;
+      $('results').hidden = true;
+      setMsg(err.message, true);
+      return;
+    }
+    state.meta = {
+      nameA: state.A.name, nameB: state.B.name,
+      sheetA: state.A.sheetNames.length > 1 ? state.A.sheet : '',
+      sheetB: state.B.sheetNames.length > 1 ? state.B.sheet : '',
+      mode: mode
+    };
+    renderResults();
+  }
+  $('run').addEventListener('click', function () {
+    runCompare();
+    if (state.result) $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  function renderResults() {
+    const res = state.result;
+    $('results').hidden = false;
+    $('dlmsg').textContent = '';
+
+    const chips = $('chips');
+    chips.textContent = '';
+    [['added', 'added'], ['removed', 'removed'], ['changed', 'changed'], ['unchanged', 'unchanged']].forEach(function (p) {
+      chips.append(el('span', { class: 'chip ' + p[0], text: res.counts[p[0]] + ' ' + p[1] }));
+    });
+
+    const notes = [];
+    if (res.dupA || res.dupB) notes.push('Duplicate key values found (' + res.dupA + ' extra rows in file A, ' + res.dupB + ' in file B). Duplicates are paired in the order they appear. Add a second key column for a more precise match.');
+    if (res.onlyA.length || res.onlyB.length) notes.push('Columns that exist in only one file are not compared, but are included in the download.');
+    $('resnotes').textContent = notes.join(' ');
+
+    const diffCount = res.counts.added + res.counts.removed + res.counts.changed;
+    const defs = [
+      ['diff', 'All differences (' + diffCount + ')'],
+      ['changed', 'Changed (' + res.counts.changed + ')'],
+      ['added', 'Added (' + res.counts.added + ')'],
+      ['removed', 'Removed (' + res.counts.removed + ')'],
+      ['unchanged', 'Unchanged (' + res.counts.unchanged + ')']
+    ];
+    const filters = $('filters');
+    filters.textContent = '';
+    defs.forEach(function (d) {
+      const b = el('button', { type: 'button', 'aria-pressed': state.filter === d[0] ? 'true' : 'false', text: d[1] });
+      b.addEventListener('click', function () { state.filter = d[0]; renderResults(); });
+      filters.append(b);
+    });
+    renderTable();
+  }
+
+  function renderTable() {
+    const res = state.result;
+    const wrap = $('tablewrap');
+    wrap.textContent = '';
+    const order = { changed: 0, added: 1, removed: 2, unchanged: 3 };
+    let list = res.records.filter(function (r) {
+      return state.filter === 'diff' ? r.status !== 'unchanged' : r.status === state.filter;
+    });
+    list = list.slice().sort(function (x, y) { return order[x.status] - order[y.status]; });
+    if (!list.length) {
+      wrap.append(el('p', { class: 'note', text: state.filter === 'diff' ? 'No differences found. The two files match on the selected columns.' : 'No rows in this category.' }));
+      return;
+    }
+    const table = el('table', { class: 'results-table' });
+    table.append(el('thead', null, el('tr', null,
+      el('th', { scope: 'col', text: 'Status' }),
+      el('th', { scope: 'col', text: 'Key' }),
+      el('th', { scope: 'col', text: 'Row A' }),
+      el('th', { scope: 'col', text: 'Row B' }),
+      el('th', { scope: 'col', text: 'Details' }))));
+    const tb = el('tbody');
+    list.slice(0, MAX_SHOWN).forEach(function (r) {
+      const detail = el('td', { class: 'detail' });
+      if (r.status === 'changed') {
+        r.diffs.forEach(function (d) {
+          detail.append(el('div', null,
+            el('span', { class: 'colname', text: d.name + ': ' }),
+            el('del', { text: clip(showValue(d.a), 120) }), ' → ',
+            el('ins', { text: clip(showValue(d.b), 120) })));
+        });
+      } else {
+        const vals = (r.b || r.a).filter(function (v) { return v !== ''; }).join(' | ');
+        detail.append(el('div', { text: clip(vals, 160) }));
+      }
+      tb.append(el('tr', null,
+        el('td', null, el('span', { class: 'badge ' + r.status, text: STATUS_LABEL[r.status] })),
+        el('td', { text: clip(r.key, 80) }),
+        el('td', { class: 'num', text: r.rowA == null ? '' : String(r.rowA) }),
+        el('td', { class: 'num', text: r.rowB == null ? '' : String(r.rowB) }),
+        detail));
+    });
+    table.append(tb);
+    wrap.append(table);
+    if (list.length > MAX_SHOWN) {
+      wrap.append(el('p', { class: 'note', text: 'Showing the first ' + MAX_SHOWN + ' of ' + list.length + ' rows. The download contains all of them.' }));
+    }
+  }
+
+  function updateFormatUI() {
+    const f = $('format').value;
+    $('csvDelimWrap').hidden = f !== 'csv';
+    const same = state.A && f === state.A.ext;
+    $('fmtnote').textContent = same ? 'Default: the same format as your uploaded file (' + state.A.name + ').' : '';
+  }
+  $('format').addEventListener('change', updateFormatUI);
+
+  $('download').addEventListener('click', function () {
+    $('dlmsg').textContent = '';
+    if (!state.result) return;
+    try {
+      const out = buildDownload(state.result, state.meta, $('format').value, $('csvDelim').value, $('inclUnchanged').checked);
+      const blob = new Blob([out.data], { type: out.mime });
+      const url = URL.createObjectURL(blob);
+      const a = el('a', { href: url, download: 'comparison-result.' + out.ext });
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+    } catch (err) {
+      $('dlmsg').textContent = err.message;
+    }
+  });
+})();
+</script>
+</body>
+</html>
